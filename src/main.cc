@@ -171,7 +171,7 @@ void print_cur_stats(uint32_t cpu, CACHE* cache)
     cout << " LOAD      ACCESS: " << setw(10) << cache->cur_access[cpu][0] << "  HIT: " << setw(10) << cache->cur_hit[cpu][0] << "  MISS: " << setw(10)
          << cache->cur_miss[cpu][0] << endl;
 
-    cout <<  "### " <<cache->NAME;
+    cout << "### " << cache->NAME;
     cout << " RFO       ACCESS: " << setw(10) << cache->cur_access[cpu][1] << "  HIT: " << setw(10) << cache->cur_hit[cpu][1] << "  MISS: " << setw(10)
          << cache->cur_miss[cpu][1] << endl;
 
@@ -184,8 +184,8 @@ void print_cur_stats(uint32_t cpu, CACHE* cache)
          << cache->cur_miss[cpu][3] << endl;
   }
 
-    cout << "### " << cache->NAME;
-    cout << " Valid Blk  Cnter: "  << setw(10) << cache->get_vldblk_cnt() << "  FtPt: " << setw(7) << (cache->get_footprint() >> 14) <<"MB."  << endl;
+  cout << "### " << cache->NAME;
+  cout << " Valid Blk  Cnter: " << setw(10) << cache->get_vldblk_cnt() << "  FtPt: " << setw(7) << (cache->get_footprint() >> 14) << "MB." << endl;
 }
 void print_branch_stats()
 {
@@ -511,7 +511,7 @@ int main(int argc, char** argv)
         cout << "### MPKI from " << preInst << " to " << curInst << std::endl;
         for (auto it = caches.rbegin(); it != caches.rend(); ++it) {
           get_cur_stats(i, *it);
-          print_cur_stats(i,*it);
+          print_cur_stats(i, *it);
           record_pre_stats(i, *it);
         }
       }

@@ -3,9 +3,9 @@
 
 #include <functional>
 #include <list>
+#include <set>
 #include <string>
 #include <vector>
-#include <set>
 
 #include "champsim.h"
 #include "delay_queue.hpp"
@@ -49,8 +49,8 @@ public:
   uint64_t sim_access[NUM_CPUS][NUM_TYPES] = {}, sim_hit[NUM_CPUS][NUM_TYPES] = {}, sim_miss[NUM_CPUS][NUM_TYPES] = {}, roi_access[NUM_CPUS][NUM_TYPES] = {},
            roi_hit[NUM_CPUS][NUM_TYPES] = {}, roi_miss[NUM_CPUS][NUM_TYPES] = {};
 
-  uint64_t pre_access[NUM_CPUS][NUM_TYPES] = {},pre_hit[NUM_CPUS][NUM_TYPES] = {}, pre_miss[NUM_CPUS][NUM_TYPES] = {};
-  uint64_t cur_access[NUM_CPUS][NUM_TYPES] = {},cur_hit[NUM_CPUS][NUM_TYPES] = {}, cur_miss[NUM_CPUS][NUM_TYPES] = {};
+  uint64_t pre_access[NUM_CPUS][NUM_TYPES] = {}, pre_hit[NUM_CPUS][NUM_TYPES] = {}, pre_miss[NUM_CPUS][NUM_TYPES] = {};
+  uint64_t cur_access[NUM_CPUS][NUM_TYPES] = {}, cur_hit[NUM_CPUS][NUM_TYPES] = {}, cur_miss[NUM_CPUS][NUM_TYPES] = {};
 
   uint64_t RQ_ACCESS = 0, RQ_MERGED = 0, RQ_FULL = 0, RQ_TO_CACHE = 0, PQ_ACCESS = 0, PQ_MERGED = 0, PQ_FULL = 0, PQ_TO_CACHE = 0, WQ_ACCESS = 0, WQ_MERGED = 0,
            WQ_FULL = 0, WQ_FORWARD = 0, WQ_TO_CACHE = 0;

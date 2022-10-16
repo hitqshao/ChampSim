@@ -288,10 +288,9 @@ bool CACHE::filllike_miss(std::size_t set, std::size_t way, PACKET& handle_pkt)
     std::cout << " cycle: " << current_cycle << std::endl;
   });
 
-
   uint64_t cacheAddr = handle_pkt.address >> 6;
 
-  if (cacheSet.count(cacheAddr) == 0 ) {
+  if (cacheSet.count(cacheAddr) == 0) {
     cacheSet.insert(cacheAddr);
   }
 
@@ -680,18 +679,15 @@ void CACHE::return_data(PACKET* packet)
 
 uint64_t CACHE::get_vldblk_cnt()
 {
-    uint64_t vldBlkCnter = 0;
-    for (auto& blk : block) {
-        if (blk.valid)
-            vldBlkCnter++;
-    }
-    return vldBlkCnter;
+  uint64_t vldBlkCnter = 0;
+  for (auto& blk : block) {
+    if (blk.valid)
+      vldBlkCnter++;
+  }
+  return vldBlkCnter;
 }
 
-uint64_t CACHE::get_footprint()
-{
-    return cacheSet.size();
-}
+uint64_t CACHE::get_footprint() { return cacheSet.size(); }
 
 uint32_t CACHE::get_occupancy(uint8_t queue_type, uint64_t address)
 {
