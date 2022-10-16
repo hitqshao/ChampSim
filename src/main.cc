@@ -22,6 +22,8 @@ uint8_t warmup_complete[NUM_CPUS] = {}, simulation_complete[NUM_CPUS] = {}, all_
 
 uint64_t warmup_instructions = 1000000, simulation_instructions = 10000000;
 
+uint64_t curInst = 0, preInst = 0;
+
 auto start_time = time(NULL);
 
 // For backwards compatibility with older module source.
@@ -52,6 +54,24 @@ void record_roi_stats(uint32_t cpu, CACHE* cache)
     cache->roi_access[cpu][i] = cache->sim_access[cpu][i];
     cache->roi_hit[cpu][i] = cache->sim_hit[cpu][i];
     cache->roi_miss[cpu][i] = cache->sim_miss[cpu][i];
+  }
+}
+
+void record_pre_stats(uint32_t cpu, CACHE* cache)
+{
+  for (uint32_t i = 0; i < NUM_TYPES; i++) {
+    cache->pre_access[cpu][i] = cache->sim_access[cpu][i];
+    cache->pre_hit[cpu][i] = cache->sim_hit[cpu][i];
+    cache->pre_miss[cpu][i] = cache->sim_miss[cpu][i];
+  }
+}
+
+void get_cur_stats(uint32_t cpu, CACHE* cache)
+{
+  for (uint32_t i = 0; i < NUM_TYPES; i++) {
+    cache->cur_access[cpu][i] = cache->sim_access[cpu][i] - cache->pre_access[cpu][i];
+    cache->cur_hit[cpu][i] = cache->sim_hit[cpu][i] - cache->pre_hit[cpu][i];
+    cache->cur_miss[cpu][i] = cache->sim_miss[cpu][i] - cache->pre_miss[cpu][i];
   }
 }
 
@@ -133,6 +153,40 @@ void print_sim_stats(uint32_t cpu, CACHE* cache)
   }
 }
 
+void print_cur_stats(uint32_t cpu, CACHE* cache)
+{
+  uint64_t TOTAL_ACCESS = 0, TOTAL_HIT = 0, TOTAL_MISS = 0;
+
+  for (uint32_t i = 0; i < NUM_TYPES; i++) {
+    TOTAL_ACCESS += cache->cur_access[cpu][i];
+    TOTAL_HIT += cache->cur_hit[cpu][i];
+    TOTAL_MISS += cache->cur_miss[cpu][i];
+  }
+
+  if (TOTAL_ACCESS > 0) {
+    cout << "### " << cache->NAME;
+    cout << " TOTAL     ACCESS: " << setw(10) << TOTAL_ACCESS << "  HIT: " << setw(10) << TOTAL_HIT << "  MISS: " << setw(10) << TOTAL_MISS << endl;
+
+    cout << "### " << cache->NAME;
+    cout << " LOAD      ACCESS: " << setw(10) << cache->cur_access[cpu][0] << "  HIT: " << setw(10) << cache->cur_hit[cpu][0] << "  MISS: " << setw(10)
+         << cache->cur_miss[cpu][0] << endl;
+
+    cout <<  "### " <<cache->NAME;
+    cout << " RFO       ACCESS: " << setw(10) << cache->cur_access[cpu][1] << "  HIT: " << setw(10) << cache->cur_hit[cpu][1] << "  MISS: " << setw(10)
+         << cache->cur_miss[cpu][1] << endl;
+
+    cout << "### " << cache->NAME;
+    cout << " PREFETCH  ACCESS: " << setw(10) << cache->cur_access[cpu][2] << "  HIT: " << setw(10) << cache->cur_hit[cpu][2] << "  MISS: " << setw(10)
+         << cache->cur_miss[cpu][2] << endl;
+
+    cout << "### " << cache->NAME;
+    cout << " WRITEBACK ACCESS: " << setw(10) << cache->cur_access[cpu][3] << "  HIT: " << setw(10) << cache->cur_hit[cpu][3] << "  MISS: " << setw(10)
+         << cache->cur_miss[cpu][3] << endl;
+  }
+
+    cout << "### " << cache->NAME;
+    cout << " Valid Blk  Cnter: "  << setw(10) << cache->get_vldblk_cnt() << "  FtPt: " << setw(7) << (cache->get_footprint() >> 14) <<"MB."  << endl;
+}
 void print_branch_stats()
 {
   for (uint32_t i = 0; i < NUM_CPUS; i++) {
@@ -230,6 +284,15 @@ void reset_cache_stats(uint32_t cpu, CACHE* cache)
     cache->sim_access[cpu][i] = 0;
     cache->sim_hit[cpu][i] = 0;
     cache->sim_miss[cpu][i] = 0;
+  }
+
+  for (uint32_t i = 0; i < NUM_TYPES; i++) {
+    cache->pre_access[cpu][i] = 0;
+    cache->pre_hit[cpu][i] = 0;
+    cache->pre_miss[cpu][i] = 0;
+    cache->cur_access[cpu][i] = 0;
+    cache->cur_hit[cpu][i] = 0;
+    cache->cur_miss[cpu][i] = 0;
   }
 
   cache->pf_requested = 0;
@@ -436,10 +499,21 @@ int main(int argc, char** argv)
         cout << "Heartbeat CPU " << i << " instructions: " << ooo_cpu[i]->num_retired << " cycles: " << ooo_cpu[i]->current_cycle;
         cout << " heartbeat IPC: " << heartbeat_ipc << " cumulative IPC: " << cumulative_ipc;
         cout << " (Simulation time: " << elapsed_hour << " hr " << elapsed_minute << " min " << elapsed_second << " sec) " << endl;
+
         ooo_cpu[i]->next_print_instruction += STAT_PRINTING_PERIOD;
 
         ooo_cpu[i]->last_sim_instr = ooo_cpu[i]->num_retired;
         ooo_cpu[i]->last_sim_cycle = ooo_cpu[i]->current_cycle;
+
+        preInst = curInst != 0 ? curInst : ooo_cpu[i]->begin_sim_instr;
+        curInst = ooo_cpu[i]->num_retired;
+
+        cout << "### MPKI from " << preInst << " to " << curInst << std::endl;
+        for (auto it = caches.rbegin(); it != caches.rend(); ++it) {
+          get_cur_stats(i, *it);
+          print_cur_stats(i,*it);
+          record_pre_stats(i, *it);
+        }
       }
 
       // check for warmup

@@ -5,6 +5,7 @@
 #include <list>
 #include <string>
 #include <vector>
+#include <set>
 
 #include "champsim.h"
 #include "delay_queue.hpp"
@@ -25,6 +26,7 @@ public:
   const uint32_t NUM_SET, NUM_WAY, WQ_SIZE, RQ_SIZE, PQ_SIZE, MSHR_SIZE;
   const uint32_t HIT_LATENCY, FILL_LATENCY, OFFSET_BITS;
   std::vector<BLOCK> block{NUM_SET * NUM_WAY};
+  std::set<uint64_t> cacheSet;
   const uint32_t MAX_READ, MAX_WRITE;
   uint32_t reads_available_this_cycle, writes_available_this_cycle;
   const bool prefetch_as_load;
@@ -47,6 +49,9 @@ public:
   uint64_t sim_access[NUM_CPUS][NUM_TYPES] = {}, sim_hit[NUM_CPUS][NUM_TYPES] = {}, sim_miss[NUM_CPUS][NUM_TYPES] = {}, roi_access[NUM_CPUS][NUM_TYPES] = {},
            roi_hit[NUM_CPUS][NUM_TYPES] = {}, roi_miss[NUM_CPUS][NUM_TYPES] = {};
 
+  uint64_t pre_access[NUM_CPUS][NUM_TYPES] = {},pre_hit[NUM_CPUS][NUM_TYPES] = {}, pre_miss[NUM_CPUS][NUM_TYPES] = {};
+  uint64_t cur_access[NUM_CPUS][NUM_TYPES] = {},cur_hit[NUM_CPUS][NUM_TYPES] = {}, cur_miss[NUM_CPUS][NUM_TYPES] = {};
+
   uint64_t RQ_ACCESS = 0, RQ_MERGED = 0, RQ_FULL = 0, RQ_TO_CACHE = 0, PQ_ACCESS = 0, PQ_MERGED = 0, PQ_FULL = 0, PQ_TO_CACHE = 0, WQ_ACCESS = 0, WQ_MERGED = 0,
            WQ_FULL = 0, WQ_FORWARD = 0, WQ_TO_CACHE = 0;
 
@@ -61,6 +66,9 @@ public:
   void operate() override;
   void operate_writes();
   void operate_reads();
+
+  uint64_t get_vldblk_cnt();
+  uint64_t get_footprint();
 
   uint32_t get_occupancy(uint8_t queue_type, uint64_t address) override;
   uint32_t get_size(uint8_t queue_type, uint64_t address) override;

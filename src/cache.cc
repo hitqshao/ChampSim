@@ -288,6 +288,13 @@ bool CACHE::filllike_miss(std::size_t set, std::size_t way, PACKET& handle_pkt)
     std::cout << " cycle: " << current_cycle << std::endl;
   });
 
+
+  uint64_t cacheAddr = handle_pkt.address >> 6;
+
+  if (cacheSet.count(cacheAddr) == 0 ) {
+    cacheSet.insert(cacheAddr);
+  }
+
   bool bypass = (way == NUM_WAY);
 #ifndef LLC_BYPASS
   assert(!bypass);
@@ -401,8 +408,9 @@ int CACHE::invalidate_entry(uint64_t inval_addr)
   uint32_t set = get_set(inval_addr);
   uint32_t way = get_way(inval_addr, set);
 
-  if (way < NUM_WAY)
+  if (way < NUM_WAY) {
     block[set * NUM_WAY + way].valid = 0;
+  }
 
   return way;
 }
@@ -668,6 +676,21 @@ void CACHE::return_data(PACKET* packet)
   // Order this entry after previously-returned entries, but before non-returned
   // entries
   std::iter_swap(mshr_entry, first_unreturned);
+}
+
+uint64_t CACHE::get_vldblk_cnt()
+{
+    uint64_t vldBlkCnter = 0;
+    for (auto& blk : block) {
+        if (blk.valid)
+            vldBlkCnter++;
+    }
+    return vldBlkCnter;
+}
+
+uint64_t CACHE::get_footprint()
+{
+    return cacheSet.size();
 }
 
 uint32_t CACHE::get_occupancy(uint8_t queue_type, uint64_t address)

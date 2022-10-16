@@ -72,7 +72,7 @@
 
     "L2C": {
         "sets": 1024,
-        "ways": 8,
+        "ways": 16,
         "rq_size": 32,
         "wq_size": 32,
         "pq_size": 16,
@@ -142,8 +142,8 @@
 
     "LLC": {
         "frequency": 4000,
-        "sets": 2048,
-        "ways": 16,
+        "sets": 4096,
+        "ways": 2048,
         "rq_size": 32,
         "wq_size": 32,
         "pq_size": 32,
